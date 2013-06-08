@@ -1,0 +1,4 @@
+*.o
+libapplication.so
+OpenJazz
+.svn
