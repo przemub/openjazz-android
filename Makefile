@@ -33,12 +33,14 @@ OBJS = \
 	src/player/player.o \
 	src/main.o src/setup.o src/util.o
 
+FLAGS = -DUSE_SOCKETS -DUSE_MODPLUG
+
 
 OpenJazz: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o OpenJazz $(OBJS) $(LDFLAGS)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(FLAGS) -Isrc -c $< -o $@
 
 clean:
 	rm -f libapplication.so $(OBJS)
