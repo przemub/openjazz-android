@@ -6,6 +6,9 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created main.c
+ * 22nd July 2008: Created util.c from parts of main.c
+ * 3rd February 2009: Renamed util.c to util.cpp
  * 13th July 2009: Created graphics.cpp from parts of util.cpp
  * 26th July 2009: Renamed graphics.cpp to video.cpp
  *
@@ -105,7 +108,7 @@ Video::Video () {
  */
 void Video::findMaxResolution () {
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
+#if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	maxW = 320;
 	maxH = 240;
 #else

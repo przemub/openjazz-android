@@ -6,6 +6,11 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp
+ * 19th July 2009: Created eventframe.cpp from parts of events.cpp
+ * 19th July 2009: Renamed events.cpp to event.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  * 1st August 2012: Renamed bridge.cpp to jj1bridge.cpp
  *
@@ -123,7 +128,6 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
  */
 void JJ1Bridge::draw (unsigned int ticks, int change) {
 
-	Anim* anim;
 	unsigned char frame;
 	int count;
 	fixed bridgeLength, anchorY, leftDipY, rightDipY;
@@ -142,8 +146,7 @@ void JJ1Bridge::draw (unsigned int ticks, int change) {
 
 	frame = ticks / (set->animSpeed << 5);
 
-	anim = getAnim();
-	anim->setFrame(frame + gridX + gridY, true);
+	setAnimFrame(frame + gridX + gridY);
 
 
 	// Draw the bridge

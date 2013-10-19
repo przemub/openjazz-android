@@ -6,6 +6,8 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 4th February 2009: Created events.h from parts of level.h
  * 11th February 2009: Created bullet.h from parts of events.h
  * 1st March 2009: Created bird.h from parts of events.h
@@ -58,14 +60,20 @@
 
 // Classes
 
+class Anim;
 class JJ1LevelPlayer;
 
 /// JJ1 level event
 class JJ1Event : public Movable {
 
+	private:
+		void calcDimensions ();
+
 	protected:
 		JJ1Event*     next; ///< Next event
 		JJ1EventType* set; ///< Type
+		Anim*         anim; ///< Current animation
+		fixed         width, height; ///< Current dimensions
 		unsigned char gridX, gridY; ///< Grid position of the event
 		unsigned char animType; ///< Animation type (E_LEFTANIM, etc.)
 		unsigned int  flashTime; ///< Time flash will end
@@ -76,9 +84,8 @@ class JJ1Event : public Movable {
 		JJ1Event* remove  ();
 		void      destroy (unsigned int ticks);
 
-		Anim* getAnim   ();
-		fixed getHeight ();
-		fixed getWidth  ();
+		void setAnimType  (unsigned char type);
+		void setAnimFrame (int frame);
 
 		JJ1EventType* prepareStep (unsigned int ticks, int msps);
 

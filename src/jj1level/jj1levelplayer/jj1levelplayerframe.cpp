@@ -6,6 +6,11 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  * 24th June 2010: Renamed playerframe.cpp to levelplayerframe.cpp
  * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
@@ -13,7 +18,7 @@
  * 1st August 2012: Renamed levelplayerframe.cpp to jj1levelplayerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -71,6 +76,22 @@ bool JJ1LevelPlayer::checkMaskUp (fixed yOffset) {
 	return level->checkMaskUp(x + PXO_ML, y + yOffset) ||
 		level->checkMaskUp(x + PXO_MID, y + yOffset) ||
 		level->checkMaskUp(x + PXO_MR, y + yOffset);
+
+}
+
+
+/**
+ * Move the player to the ground's surface.
+ */
+void JJ1LevelPlayer::ground () {
+
+	// If on an uphill slope, push the player upwards
+	if (checkMaskUp(0) && !checkMaskUp(-F4)) y -= F4;
+
+	// If on a downhill slope, push the player downwards
+	if (!checkMaskUp(F4) && checkMaskUp(F8)) y += F4;
+
+	return;
 
 }
 
@@ -404,12 +425,12 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 			else if ((dx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
+		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
 			!level->checkMaskDown(x + PXO_L, y + F2) &&
 			(event != LPE_PLATFORM))
 			animType = PA_LEDGE;
 
-		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
+		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
 			!level->checkMaskDown(x + PXO_R, y + F2) &&
 			(event != LPE_PLATFORM))
 			animType = PA_REDGE;
@@ -447,6 +468,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
+	bool grounded = false;
 	int count;
 
 	if (warpTime && (ticks > warpTime)) {
@@ -498,45 +520,62 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 4095;
 
-		if (!checkMaskUp(PYO_TOP - pdy))
-			y -= pdy;
-		else {
+		if (checkMaskUp(PYO_TOP - pdy)) {
 
 			y &= ~4095;
 			dy = 0;
 
-		}
+		} else y -= pdy;
 
-	} else if (pdy > 0) {
+	} else {
 
-		// Moving down
+		if (pdy > 0) {
 
-		count = pdy >> 12;
+			// Moving down
 
-		while (count > 0) {
+			count = pdy >> 12;
 
-			if (checkMaskDown(F4)) {
+			while (count > 0) {
+
+				if (checkMaskDown(F4)) {
+
+					y |= 4095;
+					dy = 0;
+
+					break;
+
+				}
+
+				y += F4;
+				count--;
+
+			}
+
+			pdy &= 4095;
+
+			if (checkMaskDown(pdy)) {
 
 				y |= 4095;
 				dy = 0;
 
-				break;
-
-			}
-
-			y += F4;
-			count--;
+			} else y += pdy;
 
 		}
 
-		pdy &= 4095;
+		if (!floating) {
 
-		if (!checkMaskDown(pdy))
-			y += pdy;
-		else {
+			if (checkMaskDown(0)) {
 
-			y |= 4095;
-			dy = 0;
+				// In the ground, so move up
+				if (y >= 4096) y = (y - 4096) | 4095;
+				grounded = true;
+
+			} else if (checkMaskDown(1)) {
+
+				// On the ground
+				grounded = true;
+
+			}
 
 		}
 
@@ -567,33 +606,20 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x -= F4;
 			count--;
 
-			// If on an uphill slope, push the player upwards
-			if (level->checkMaskUp(x + PXO_ML, y) &&
-				!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
-
-			// If on a downhill slope, push the player downwards
-			if (!level->checkMaskUp(x + PXO_ML, y + F4) &&
-				level->checkMaskUp(x + PXO_ML, y + F8)) y += F4;
+			if (grounded) ground();
 
 		}
 
 		pdx = (-pdx) & 4095;
 
-		if (!level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
-		else {
+		if (level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) {
 
 			x &= ~4095;
 			dx = 0;
 
-		}
+		} else x -= pdx;
 
-		// If on an uphill slope, push the player upwards
-		if (level->checkMaskUp(x + PXO_ML, y) &&
-			!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
-
-		// If on a downhill slope, push the player downwards
-		if (!level->checkMaskUp(x + PXO_ML, y + F4) &&
-			level->checkMaskUp(x + PXO_ML, y + F8)) y += F4;
+		if (grounded) ground();
 
 	} else if (pdx > 0) {
 
@@ -616,33 +642,20 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x += F4;
 			count--;
 
-			// If on an uphill slope, push the player upwards
-			if (level->checkMaskUp(x + PXO_MR, y) &&
-				!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
-
-			// If on a downhill slope, push the player downwards
-			if (!level->checkMaskUp(x + PXO_MR, y + F4) &&
-				level->checkMaskUp(x + PXO_MR, y + F8)) y += F4;
+			if (grounded) ground();
 
 		}
 
 		pdx &= 4095;
 
-		if (!level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
-		else {
+		if (level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) {
 
 			x |= 4095;
 			dx = 0;
 
-		}
+		} else x += pdx;
 
-		// If on an uphill slope, push the player upwards
-		if (level->checkMaskUp(x + PXO_MR, y) &&
-			!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
-
-		// If on a downhill slope, push the player downwards
-		if (!level->checkMaskUp(x + PXO_MR, y + F4) &&
-			level->checkMaskUp(x + PXO_MR, y + F8)) y += F4;
+		if (grounded) ground();
 
 	}
 
@@ -680,6 +693,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
  *
  * @param ticks Time
  * @param mspf Ticks per frame
+ * @param change Time since last step
  */
 void JJ1LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 

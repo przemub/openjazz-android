@@ -31,11 +31,10 @@ OBJS = \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/plasma.o src/menu/setupmenu.o \
 	src/player/player.o \
-	src/main.o src/util.o
+	src/main.o src/setup.o src/util.o
 
 
 OpenJazz: $(OBJS)
-	echo $(LDFLAGS)
 	$(CXX) $(CXXFLAGS) -o OpenJazz $(OBJS) $(LDFLAGS)
 
 %.o: %.cpp

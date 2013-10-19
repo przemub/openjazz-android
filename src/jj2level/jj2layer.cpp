@@ -6,6 +6,10 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 3rd February 2009: Renamed level.c to level.cpp
+ * 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
  * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *
  * @section Licence
@@ -51,6 +55,8 @@ JJ2Layer::JJ2Layer () {
  *
  * @param newWidth The width of the layer (in tiles)
  * @param newHeight The height of the layer (in tiles)
+ * @param newXSpeed The relative horizontal speed of the layer
+ * @param newYSpeed The relative vertical speed of the layer
  * @param flags Layer flags
  */
 JJ2Layer::JJ2Layer (int flags, int newWidth, int newHeight, fixed newXSpeed, fixed newYSpeed) {
