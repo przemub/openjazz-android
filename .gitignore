@@ -1,4 +1,5 @@
 *.o
 libapplication.so
+libapplication*.so
 OpenJazz
 .svn
