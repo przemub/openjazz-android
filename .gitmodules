@@ -1,0 +1,3 @@
+[submodule "openjazz"]
+	path = openjazz
+	url = https://github.com/przemub/openjazz
